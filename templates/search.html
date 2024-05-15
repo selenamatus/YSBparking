@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he">
 <head>
     <meta charset="UTF-8">
-    <title>Search</title>
-	 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
-	 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+    <title>חיפוש מספר רכב</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
 
-	  <style>
+    <style>
         body {
             background-color: lightblue;
             display: flex;
@@ -16,73 +16,72 @@
             margin: 0;
             text-align: center;
             flex-direction: column;
-			font-family: 'Playfair Display', sans-serif
+            font-family: 'Playfair Display', sans-serif;
         }
         header {
             margin-bottom: 20px;
         }
-		 .search-form {
+        .search-form {
             display: flex;
             justify-content: center;
             align-items: center;
-			flex-wrap: wrap;
+            flex-wrap: wrap; /* Ensures the elements wrap on smaller screens */
         }
         .search-form label {
             margin-left: 10px;
         }
-		 .search-form input {
+        .search-form input {
             margin-left: 10px;
         }
-		 .search-results {
+        .search-results {
             margin-top: 20px;
-			margin-right: 60px;
-            text-align: right; 
+            margin-right: 60px;
+            text-align: right;
         }
-		    @media (max-width: 600px) {
+        @media (max-width: 600px) {
             body {
-                height: auto; 
+                height: auto; /* Adjust height for mobile */
             }
             .search-form {
-                flex-direction: column; 
+                flex-direction: column; /* Stack elements vertically on small screens */
             }
             .search-form label {
                 margin-left: 0;
-                margin-top: 10px; 
+                margin-top: 10px; /* Add margin on top for better spacing */
             }
             .search-form input, .search-form button {
                 width: 100%;
-                margin-top: 10px; 
+                margin-top: 10px; /* Add margin for better spacing */
             }
             .search-results {
                 margin-right: 0;
-                text-align: center; 
+                text-align: center; /* Center-align text on mobile */
             }
         }
     </style>
 </head>
 <body>
-	<header>
+    <header>
         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="width: 150px; height: auto; display: block; margin: 0 auto;">
     </header>
-     <h1>?מי חוסם אותי</h1>
+    <h1>?מי חוסם אותי</h1>
     <form method="post" class="search-form">
         <button type="submit">חיפוש</button>
         <input type="text" id="license_plate" name="license_plate" required>
         <label for="license_plate">:מספר רכב</label>
-	   </form>
+    </form>
 
-      {% if result %}
+    {% if result %}
         <div class="search-results">
             {% if result == 'not_found' %}
                 <p>הנהג לא קיים</p>
             {% else %}
                 <h2>:תוצאות החיפוש</h2>
                 <p>מספר רכב: {{ result.CRegistration }}</p>
-                <p>שם הנהג: {{ result.driver.DFirstName }} {{ result.driver.DLastName }}</p>
-                <p>מספר טלפון של הנהג: <a href="tel:{{ result.driver.DTel }}">{{ result.driver.DTel }}</a></p>
+                <p>שם הנהג: {{ result.driver_name }}</p>
+                <p>מספר טלפון של הנהג: <a href="tel:{{ result.driver_phone }}">{{ result.driver_phone }}</a></p>
             {% endif %}
         </div>
     {% endif %}
 </body>
 </html>
-

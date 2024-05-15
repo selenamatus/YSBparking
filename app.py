@@ -2,20 +2,31 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from models import db, Car, Driver
 from config import Config
+import json
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+# Load data from JSON file into a dictionary
+def load_data_from_json():
+    data_dict = {}
+    if os.path.exists('data.json'):
+        with open('data.json', 'r') as json_file:
+            data_dict = json.load(json_file)
+    return data_dict
+
+data_dict = load_data_from_json()
+
 # User model
 class User(db.Model, UserMixin):
     __tablename__ = 'tbUsers'
-    id = db.Column('UidCard', db.String(10), primary_key=True) 
+    id = db.Column('UidCard', db.String(10), primary_key=True)
     first_name = db.Column('UFirstName', db.String(80), nullable=False)
     password = db.Column('UPassword', db.String(120))
 
     def check_password(self, password):
-        # Here, we're assuming passwords are stored in plaintext, which is not recommended.
         return self.password == password
 
 # Flask-Login setup
@@ -58,9 +69,14 @@ def search():
         reg_number = request.form['license_plate']
         car = Car.query.filter_by(CRegistration=reg_number).first()
         if car and car.driver:
-            return render_template('search.html', result=car)
+            result = {
+                'CRegistration': car.CRegistration,
+                'driver_name': f'{car.driver.DFirstName} {car.driver.DLastName}',
+                'driver_phone': car.driver.DTel
+            }
         else:
-            return render_template('search.html', result='not_found')
+            result = 'not_found'
+        return render_template('search.html', result=result)
     return render_template('search.html')
 
 # Debugging route to list all files in the templates directory
