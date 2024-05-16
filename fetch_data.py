@@ -1,5 +1,5 @@
-from app import app, db
-from models import Car
+from app import app
+from models import db, Car
 import json
 
 def fetch_data_to_dict():
@@ -21,7 +21,8 @@ def fetch_data_to_dict():
     return data_dict
 
 if __name__ == '__main__':
-    data_dict = fetch_data_to_dict()
-    with open('data.json', 'w') as json_file:
-        json.dump(data_dict, json_file)
-    print("Data fetched and saved to data.json")
+    with app.app_context():
+        data_dict = fetch_data_to_dict()
+        with open('data.json', 'w') as json_file:
+            json.dump(data_dict, json_file)
+        print("Data fetched and saved to data.json")

@@ -1,82 +1,25 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
-from models import db, Car, Driver
-from config import Config
 import json
 import os
 
 app = Flask(__name__)
-app.config.from_object(Config)
-db.init_app(app)
+app.secret_key = 'your_super_secret_key'  # Replace with a strong, random secret key for production
 
-# Load data from JSON file into a dictionary
-def load_data_from_json():
-    data_dict = {}
-    if os.path.exists('data.json'):
-        with open('data.json', 'r') as json_file:
-            data_dict = json.load(json_file)
-    return data_dict
-
-data_dict = load_data_from_json()
-
-# User model
-class User(db.Model, UserMixin):
-    __tablename__ = 'tbUsers'
-    id = db.Column('UidCard', db.String(10), primary_key=True)
-    first_name = db.Column('UFirstName', db.String(80), nullable=False)
-    password = db.Column('UPassword', db.String(120))
-
-    def check_password(self, password):
-        return self.password == password
-
-# Flask-Login setup
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
+# Load data from JSON
+with open('data.json', 'r', encoding='utf-8') as json_file:
+    data_dict = json.load(json_file)
 
 # Routes
 @app.route('/')
 def home():
     return 'Welcome to the License Plate Lookup App!'
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        first_name = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(first_name=first_name).first()
-        if user and user.check_password(password):
-            login_user(user)
-            return redirect(url_for('search'))
-        else:
-            flash('Invalid username or password')
-    return render_template('login.html')
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('home'))
-
 @app.route('/search', methods=['GET', 'POST'])
-@login_required
 def search():
     if request.method == 'POST':
-        reg_number = request.form['license_plate']
-        car = Car.query.filter_by(CRegistration=reg_number).first()
-        if car and car.driver:
-            result = {
-                'CRegistration': car.CRegistration,
-                'driver_name': f'{car.driver.DFirstName} {car.driver.DLastName}',
-                'driver_phone': car.driver.DTel
-            }
-        else:
-            result = 'not_found'
-        return render_template('search.html', result=result)
+        license_plate = request.form['license_plate']
+        result = data_dict.get(license_plate, 'not_found')
+        return render_template('search.html', result=result, license_plate=license_plate)
     return render_template('search.html')
 
 # Debugging route to list all files in the templates directory
